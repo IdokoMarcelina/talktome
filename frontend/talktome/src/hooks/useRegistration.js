@@ -23,13 +23,41 @@ export const useRegistration = (address) => {
     try {
       setIsCheckingRegistration(true)
       setRegistrationError('')
-      const result = await checkUserRegistration(address)
+
+      // Add retry logic for RPC errors
+      let retries = 3
+      let result = null
+
+      while (retries > 0 && !result) {
+        try {
+          result = await checkUserRegistration(address)
+          break
+        } catch (error) {
+          retries--
+          console.warn(`Registration check attempt failed, ${retries} retries left:`, error.message)
+
+          if (retries > 0) {
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000))
+          } else {
+            throw error
+          }
+        }
+      }
+
       setIsRegistered(result.isRegistered)
       setUserRecord(result.userRecord)
       return result
     } catch (error) {
-      console.error('Error checking registration:', error)
-      setRegistrationError('Failed to check registration status')
+      console.error('Error checking registration after all retries:', error)
+
+      // Handle specific RPC errors
+      if (error.message && error.message.includes('Internal JSON-RPC error')) {
+        setRegistrationError('Network connectivity issue. Please try again.')
+      } else {
+        setRegistrationError('Failed to check registration status')
+      }
+
       return { isRegistered: false, userRecord: null }
     } finally {
       setIsCheckingRegistration(false)
@@ -95,6 +123,8 @@ export const useRegistration = (address) => {
       navigate('/chat')
     }
   }, [isConfirmed, navigate])
+
+  
 
   // Check registration on mount if address is available
   useEffect(() => {

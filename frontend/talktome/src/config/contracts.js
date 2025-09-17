@@ -1,6 +1,6 @@
 export const CONTRACTS = {
   ENS_REGISTRY: {
-    address: "0x1d144057Ce5EA0cB561fc01Bc7557A4Ed40cca1a",
+    address: "0xe635F635540F09eec503376A170Fc4bad928EBb7",
     abi: [
       {
         "inputs": [
@@ -40,11 +40,18 @@ export const CONTRACTS = {
         ],
         "stateMutability": "view",
         "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getAllRegisteredAddresses",
+        "outputs": [{"internalType": "address[]", "name": "", "type": "address[]"}],
+        "stateMutability": "view",
+        "type": "function"
       }
     ]
   },
   CHAT_DAPP: {
-    address: "0xf589F8afbE24cbf14B6d7874daFF2e1f71824BE9", 
+    address: "0x013b2134021F8166240f345e635085847086b252", 
     abi: [
       {
         "inputs": [{"internalType": "string", "name": "_content", "type": "string"}],
@@ -114,6 +121,30 @@ export const CONTRACTS = {
         "name": "getUserChatRooms",
         "outputs": [{"internalType": "bytes32[]", "name": "", "type": "bytes32[]"}],
         "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {"internalType": "bytes32", "name": "_chatRoomId", "type": "bytes32"},
+          {"internalType": "address", "name": "_user", "type": "address"}
+        ],
+        "name": "isParticipantOfChatRoom",
+        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [{"internalType": "address", "name": "_user", "type": "address"}],
+        "name": "isParticipantOfGlobalChat",
+        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [{"internalType": "address", "name": "_participant", "type": "address"}],
+        "name": "createDirectMessage",
+        "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+        "stateMutability": "nonpayable",
         "type": "function"
       }
     ]

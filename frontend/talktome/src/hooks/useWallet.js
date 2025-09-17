@@ -4,14 +4,28 @@ import { useState, useEffect } from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
 export const useWallet = () => {
-  const { address, isConnected, isConnecting } = useAccount();
+  const { address, isConnected, isConnecting, isReconnecting } = useAccount();
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect();
   const { disconnect } = useDisconnect();
   const [mounted, setMounted] = useState(false);
+  const [isStable, setIsStable] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Track connection stability
+  useEffect(() => {
+    if (isConnected && address && !isConnecting && !isReconnecting) {
+      // Wait a bit to ensure connection is stable
+      const timer = setTimeout(() => {
+        setIsStable(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setIsStable(false);
+    }
+  }, [isConnected, address, isConnecting, isReconnecting]);
 
   const connectWallet = async (connector) => {
     try {
@@ -36,13 +50,14 @@ export const useWallet = () => {
 
   return {
     address,
-    isConnected: mounted && isConnected,
-    isConnecting: isConnecting || isLoading,
+    isConnected: mounted && isConnected && isStable,
+    isConnecting: isConnecting || isLoading || isReconnecting || (isConnected && !isStable),
     connectors,
     connect: connectWallet,
     disconnect: disconnectWallet,
     formatAddress,
     error,
     pendingConnector,
+    isStable,
   };
 };

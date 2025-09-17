@@ -272,6 +272,9 @@ contract ChatDApp {
         require(bytes(_content).length > 0, "Message content cannot be empty");
         require(bytes(_content).length <= 1000, "Message too long");
 
+        // Auto-join global chat if not already a participant
+        _ensureGlobalChatParticipant();
+
         ChatRoom storage room = chatRooms[globalChatRoom];
         uint256 messageId = room.messageCount;
 
@@ -289,6 +292,10 @@ contract ChatDApp {
     }
 
     function joinGlobalChat() external onlyRegisteredUser {
+        _ensureGlobalChatParticipant();
+    }
+
+    function _ensureGlobalChatParticipant() internal {
         bool alreadyParticipant = false;
         for (uint i = 0; i < chatRooms[globalChatRoom].participants.length; i++) {
             if (chatRooms[globalChatRoom].participants[i] == msg.sender) {
@@ -313,5 +320,23 @@ contract ChatDApp {
 
     function getAllRegisteredUsers() external view returns (address[] memory) {
         return ensRegistry.getAllRegisteredAddresses();
+    }
+
+    function isParticipantOfChatRoom(bytes32 _chatRoomId, address _user)
+        external
+        view
+        validChatRoom(_chatRoomId)
+        returns (bool)
+    {
+        for (uint i = 0; i < chatRooms[_chatRoomId].participants.length; i++) {
+            if (chatRooms[_chatRoomId].participants[i] == _user) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function isParticipantOfGlobalChat(address _user) external view returns (bool) {
+        return this.isParticipantOfChatRoom(globalChatRoom, _user);
     }
 }
